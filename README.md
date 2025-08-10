@@ -4,6 +4,8 @@
 
 **INSTALLATION GUIDE**
 
+**NOTE: DOSENT WORK IN TERMUX**
+
 To install first clone this repository or donload it as zip
 
 ```
