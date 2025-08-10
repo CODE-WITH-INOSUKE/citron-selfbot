@@ -1,0 +1,14 @@
+{
+  "copies": [
+    {
+      "source": "1368254012230598746",
+      "destination": "1401211360003489915"
+    }
+  ],
+  "webhooks": {
+    "1401211360003489915": {
+      "id": "1401943469236293782",
+      "token": "OZZqHPLjAM76Y-eYXzJL6pN1s4V3nC_mqzYerjF8A_MmVbiIAUSLCtLd1T-TKdbD6hCZ"
+    }
+  }
+}

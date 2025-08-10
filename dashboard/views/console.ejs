@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Console Logs</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-gray-200 p-6">
+<h1 class="text-2xl font-bold mb-4">Bot Console Logs</h1>
+<div class="bg-gray-800 rounded p-4 overflow-auto h-[80vh]">
+  <% logs.forEach(log => { %>
+    <div class="mb-2">
+      <span class="text-xs text-gray-500">[<%= log.time %>]</span>
+      <span class="<%= log.type === 'error' ? 'text-red-400' : (log.type==='warn' ? 'text-yellow-400' : 'text-green-400') %>">
+        <%= log.type.toUpperCase() %>
+      </span>
+      <pre class="inline text-sm"><%= log.message %></pre>
+    </div>
+  <% }) %>
+</div>
+</body>
+</html>

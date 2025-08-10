@@ -1,0 +1,19 @@
+{
+  "groq": {
+    "apiKey": "",
+    "model": "llama3-70b-8192"
+  },
+  "gemini": {
+    "apiKey": "",
+    "model": "gemini-1.5-flash"
+  },
+  "shapes": {
+    "apiKey": "",
+    "model": ""
+  },
+  "nvidia": {
+    "apiKey": "",
+    "model": "meta/llama-4-maverick-17b-128e-instruct",
+    "invokeUrl": "https://integrate.api.nvidia.com/v1/chat/completions"
+  }
+}

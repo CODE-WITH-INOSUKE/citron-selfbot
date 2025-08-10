@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selfbot Dashboard - <%= username || 'Offline' %></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glow {
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .glow:hover {
+            box-shadow: 0 15px 50px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .online { background-color: #10b981; animation: pulse 2s infinite; }
+        .offline { background-color: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 4px solid #3b82f6;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+            border-left: 4px solid #10b981;
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+        }
+
+        .avatar-container {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 4px;
+            border-radius: 50%;
+        }
+
+        .rpc-indicator {
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .bio-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShimmer 3s ease infinite;
+        }
+
+        @keyframes textShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .rpc-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rpc-image-fallback {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #374151, #4b5563);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="p-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-robot text-3xl text-blue-400"></i>
+                <h1 class="text-2xl font-bold text-blue-400">Selfbot Control Panel</h1>
+            </div>
+            <div class="flex space-x-6">
+                <a href="/" class="nav-link px-4 py-2 text-gray-300 hover:text-white">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <a href="/commands" class="nav-link px-4 py-2 text-gray-300 hover:text-white">
+                    <i class="fas fa-terminal mr-2"></i>Commands
+                </a>
+                <a href="/console" class="nav-link px-4 py-2 text-gray-300 hover:text-white">
+                    <i class="fas fa-desktop mr-2"></i>Console
+                </a>
+                <a href="#" class="nav-link px-4 py-2 text-gray-300 hover:text-white" onclick="refreshData()">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 pb-6">
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Bot Status Card -->
+            <div class="card p-6 rounded-xl glow lg:col-span-2">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-server mr-3 text-blue-400"></i>
+                        Bot Status
+                    </h2>
+                    <div class="text-sm text-gray-400" id="lastUpdated">
+                        Updated: <span id="timestamp"><%= new Date().toLocaleString() %></span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="stat-card p-4 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Connection Status</p>
+                                <p class="text-2xl font-bold flex items-center">
+                                    <span class="status-indicator <%= botStatus ? 'online' : 'offline' %>"></span>
+                                    <%= botStatus ? 'Online' : 'Offline' %>
+                                </p>
+                            </div>
+                            <i class="fas <%= botStatus ? 'fa-check-circle text-green-400' : 'fa-times-circle text-red-400' %> text-3xl"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card p-4 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Bot Username</p>
+                                <p class="text-xl font-semibold text-white"><%= username || 'Unknown' %></p>
+                            </div>
+                            <div class="avatar-container">
+                                <img src="<%= userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" 
+                                     alt="Avatar" class="w-12 h-12 rounded-full">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="stat-card p-3 rounded-lg text-center">
+                        <p class="text-gray-400 text-xs">Uptime</p>
+                        <p class="text-lg font-semibold" id="uptime"><%= uptime || '00:00:00' %></p>
+                    </div>
+                    <div class="stat-card p-3 rounded-lg text-center">
+                        <p class="text-gray-400 text-xs">Commands Used</p>
+                        <p class="text-lg font-semibold"><%= commandsUsed || '0' %></p>
+                    </div>
+                    <div class="stat-card p-3 rounded-lg text-center">
+                        <p class="text-gray-400 text-xs">Active Features</p>
+                        <p class="text-lg font-semibold text-green-400"><%= activeFeatures || '5' %></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile Card -->
+            <div class="card p-6 rounded-xl glow">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fas fa-user mr-3 text-purple-400"></i>
+                    User Profile
+                </h2>
+                
+                <div class="text-center mb-4">
+                    <div class="avatar-container w-20 h-20 mx-auto mb-3">
+                        <img src="<%= userAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>" 
+                             alt="Avatar" class="w-full h-full rounded-full">
+                    </div>
+                    <h3 class="text-lg font-semibold text-white"><%= username || 'Unknown User' %></h3>
+                    <p class="text-sm text-gray-400">#<%= discriminator || '0000' %></p>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wide">User ID</p>
+                        <p class="text-sm font-mono text-gray-300 break-all"><%= userId || 'Unknown' %></p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wide">Account Created</p>
+                        <p class="text-sm text-gray-300"><%= accountCreated || 'Unknown' %></p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wide">Permissions</p>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            <span class="px-2 py-1 bg-blue-600 text-xs rounded">Owner</span>
+                            <span class="px-2 py-1 bg-green-600 text-xs rounded">Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio & Status Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Bio Card -->
+            <div class="card p-6 rounded-xl glow">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fas fa-quote-left mr-3 text-pink-400"></i>
+                    User Bio
+                </h2>
+                <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+                    <% if (userBio && userBio.trim() && userBio !== 'No bio set') { %>
+                        <p class="bio-text text-lg leading-relaxed"><%= userBio %></p>
+                    <% } else { %>
+                        <p class="text-gray-400 italic">No bio set</p>
+                    <% } %>
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full <%= bioCycling ? 'animate-pulse' : '' %>"></div>
+                        <span class="text-xs text-gray-400">
+                            <%= bioCycling ? 'Auto-cycling active' : 'Static bio' %>
+                        </span>
+                    </div>
+                    <button onclick="toggleBio()" class="text-xs text-blue-400 hover:text-blue-300 transition">
+                        <i class="fas fa-sync-alt mr-1"></i>Toggle Bio
+                    </button>
+                </div>
+            </div>
+
+            <!-- RPC Status Card -->
+            <div class="card p-6 rounded-xl glow">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fas fa-gamepad mr-3 text-yellow-400"></i>
+                    Rich Presence
+                </h2>
+                
+                <% if (rpcStatus && (rpcStatus.name || rpcStatus.state)) { %>
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-lg mb-4">
+                        <div class="flex items-center space-x-3">
+                            <% 
+                            let imageUrl = null;
+                            if (rpcStatus.imageUrl && rpcStatus.imageUrl.trim()) {
+                                imageUrl = rpcStatus.imageUrl;
+                            } else if (rpcStatus.assets && rpcStatus.assets.largeImageURL) {
+                                imageUrl = rpcStatus.assets.largeImageURL();
+                            } else if (rpcStatus.assets && rpcStatus.assets.largeImage) {
+                                // Handle Discord asset IDs
+                                if (rpcStatus.assets.largeImage.startsWith('mp:')) {
+                                    imageUrl = rpcStatus.assets.largeImage.replace('mp:', 'https://media.discordapp.net/');
+                                } else if (rpcStatus.assets.largeImage.includes('://')) {
+                                    imageUrl = rpcStatus.assets.largeImage;
+                                } else {
+                                    // Application asset
+                                    imageUrl = `https://cdn.discordapp.com/app-assets/${rpcStatus.applicationId || '1234567890'}/${rpcStatus.assets.largeImage}.png`;
+                                }
+                            }
+                            %>
+                            
+                            <% if (imageUrl) { %>
+                                <img src="<%= imageUrl %>" 
+                                     alt="RPC Image" 
+                                     class="rpc-image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="rpc-image-fallback" style="display: none;">
+                                    <i class="fas fa-gamepad text-gray-400 text-xl"></i>
+                                </div>
+                            <% } else { %>
+                                <div class="rpc-image-fallback">
+                                    <i class="fas fa-gamepad text-gray-400 text-xl"></i>
+                                </div>
+                            <% } %>
+                            
+                            <div class="flex-1">
+                                <p class="font-semibold text-white text-sm mb-1">
+                                    <%= typeof rpcStatus.type === 'number' 
+                                        ? ['Playing', 'Streaming', 'Listening', 'Watching', 'Custom'][rpcStatus.type] 
+                                        : (rpcStatus.type || 'PLAYING') %>
+                                </p>
+                                <p class="text-gray-200 font-medium"><%= rpcStatus.name || rpcStatus.state || 'Unknown Activity' %></p>
+                                <% if (rpcStatus.details) { %>
+                                    <p class="text-gray-300 text-sm mt-1"><%= rpcStatus.details %></p>
+                                <% } %>
+                                <% if (rpcStatus.state && rpcStatus.state !== rpcStatus.name) { %>
+                                    <p class="text-gray-400 text-xs mt-1"><%= rpcStatus.state %></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg text-center">
+                        <i class="fas fa-times-circle text-4xl text-gray-500 mb-2"></i>
+                        <p class="text-gray-400">No Rich Presence active</p>
+                        <p class="text-gray-500 text-sm mt-1">Use <code>!rpc</code> command to set status</p>
+                    </div>
+                <% } %>
+                
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="rpc-indicator w-2 h-2 rounded-full <%= (rpcStatus && (rpcStatus.name || rpcStatus.state)) ? '' : 'bg-gray-600' %>"></div>
+                        <span class="text-xs text-gray-400">
+                            <%= (rpcStatus && (rpcStatus.name || rpcStatus.state)) ? 'RPC Active' : 'RPC Disabled' %>
+                        </span>
+                    </div>
+                    <button onclick="toggleRPC()" class="text-xs text-yellow-400 hover:text-yellow-300 transition">
+                        <i class="fas fa-power-off mr-1"></i>Toggle RPC
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="feature-card p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-white">AI Response</h3>
+                        <p class="text-xs text-gray-400">Smart replies</p>
+                    </div>
+                    <div class="w-8 h-4 bg-gray-600 rounded-full relative">
+                        <div class="w-4 h-4 bg-green-400 rounded-full absolute <%= aiEnabled ? 'right-0' : 'left-0' %> transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-white">Auto Status</h3>
+                        <p class="text-xs text-gray-400">Status cycling</p>
+                    </div>
+                    <div class="w-8 h-4 bg-gray-600 rounded-full relative">
+                        <div class="w-4 h-4 bg-blue-400 rounded-full absolute <%= statusCycling ? 'right-0' : 'left-0' %> transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-white">Auto React</h3>
+                        <p class="text-xs text-gray-400">Smart reactions</p>
+                    </div>
+                    <div class="w-8 h-4 bg-gray-600 rounded-full relative">
+                        <div class="w-4 h-4 bg-purple-400 rounded-full absolute <%= autoReact ? 'right-0' : 'left-0' %> transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-white">AFK Mode</h3>
+                        <p class="text-xs text-gray-400">Away status</p>
+                    </div>
+                    <div class="w-8 h-4 bg-gray-600 rounded-full relative">
+                        <div class="w-4 h-4 bg-red-400 rounded-full absolute <%= afkMode ? 'right-0' : 'left-0' %> transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card p-6 rounded-xl glow">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-bolt mr-3 text-yellow-400"></i>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <a href="/commands" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition text-center">
+                    <i class="fas fa-terminal block mb-2 text-xl"></i>
+                    Commands
+                </a>
+                <a href="/console" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition text-center">
+                    <i class="fas fa-desktop block mb-2 text-xl"></i>
+                    Console
+                </a>
+                <button onclick="restartBot()" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    <i class="fas fa-redo block mb-2 text-xl"></i>
+                    Restart Bot
+                </button>
+                <button onclick="clearLogs()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    <i class="fas fa-trash block mb-2 text-xl"></i>
+                    Clear Logs
+                </button>
+                <button onclick="exportData()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    <i class="fas fa-download block mb-2 text-xl"></i>
+                    Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh timestamp
+        setInterval(() => {
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        }, 1000);
+
+        // Placeholder functions for interactive features
+        function refreshData() {
+            location.reload();
+        }
+
+        function toggleBio() {
+            fetch('/api/toggle-bio', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Bio toggle functionality - integrate with your bio command');
+                    }
+                })
+                .catch(err => {
+                    console.error('Bio toggle error:', err);
+                    alert('Bio toggle functionality - integrate with your bio command');
+                });
+        }
+
+        function toggleRPC() {
+            fetch('/api/toggle-rpc', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('RPC toggle functionality - integrate with your RPC command');
+                    }
+                })
+                .catch(err => {
+                    console.error('RPC toggle error:', err);
+                    alert('RPC toggle functionality - integrate with your RPC command');
+                });
+        }
+
+        function restartBot() {
+            if (confirm('Are you sure you want to restart the bot?')) {
+                fetch('/api/restart', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Bot restart initiated');
+                        setTimeout(() => location.reload(), 3000);
+                    })
+                    .catch(err => {
+                        console.error('Restart error:', err);
+                        alert('Restart functionality - integrate with your system');
+                    });
+            }
+        }
+
+        function clearLogs() {
+            if (confirm('Are you sure you want to clear all logs?')) {
+                fetch('/api/clear-logs', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Logs cleared successfully');
+                    })
+                    .catch(err => {
+                        console.error('Clear logs error:', err);
+                        alert('Clear logs functionality');
+                    });
+            }
+        }
+
+        function exportData() {
+            fetch('/api/export-data')
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'selfbot-data.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error('Export error:', err);
+                    alert('Export data functionality');
+                });
+        }
+
+        // Update uptime counter (real-time)
+        let startTime = new Date().getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const uptime = now - startTime;
+            const hours = Math.floor(uptime / 3600000);
+            const minutes = Math.floor((uptime % 3600000) / 60000);
+            const seconds = Math.floor((uptime % 60000) / 1000);
+            document.getElementById('uptime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        // Auto-refresh dashboard data every 30 seconds
+        setInterval(() => {
+            fetch('/api/dashboard-data')
+                .then(response => response.json())
+                .then(data => {
+                    // Update dynamic elements without full page reload
+                    const statusIndicator = document.querySelector('.status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.className = `status-indicator ${data.botStatus ? 'online' : 'offline'}`;
+                    }
+                })
+                .catch(err => console.error('Auto-refresh error:', err));
+        }, 30000);
+    </script>
+</body>
+</html>

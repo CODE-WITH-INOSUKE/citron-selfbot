@@ -1,0 +1,6 @@
+{
+    "token": "user_token here",
+    "prefix": ",,",
+    "allowedUserIds": ["", ""],
+    "port": 3000
+}
