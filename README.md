@@ -4,8 +4,12 @@
 
 **INSTALLATION GUIDE**
 
-To install dependencies
+To install first clone this repository or donload it as zip
 
+```
+git clone https://github.com/CODE-WITH-INOSUKE/citron-selfbot.git
+```
+Then install packages
 ```
 npm install
 ```
