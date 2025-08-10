@@ -1,9 +1,5 @@
 # CITRON-S3LFBOT
 
-⚠️ Warning: Using selfbots violates Discord's Terms of Service and can result in account termination. Use at your own risk.
-
-# CITRON-S3LFBOT
-
 >⚠️ Warning: Using selfbots violates Discord's Terms of Service and can result in account termination. Use at your own risk.
 
 **INSTALLATION GUIDE**
