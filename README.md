@@ -5,6 +5,7 @@
 **INSTALLATION GUIDE**
 
 **NOTE: DOSENT WORK IN TERMUX**
+**USE THIS INSTEAD [LITE VERSION](https://github.com/CODE-WITH-INOSUKE/citron-lite.git)**
 
 To install first clone this repository or donload it as zip
 
